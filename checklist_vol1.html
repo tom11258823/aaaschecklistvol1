@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AaaS導入前チェックリスト</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+        .item-info {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        .item-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        .item-image {
+            max-width: 250px; /* 画像の最大幅 */
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: block; /* ブロック要素にする */
+        }
+        .status-display {
+            text-align: right;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        /* チェックボックスのスタイル調整 */
+        input[type="checkbox"] {
+            transform: scale(1.5); /* チェックボックスを少し大きく表示 */
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        .completed-item .item-name {
+            text-decoration: line-through;
+            color: #95a5a6;
+        }
+        .all-complete {
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>AaaS導入チェックリスト (営業用)</h1>
+        
+        <div class="status-display">
+            進捗: <span id="progress-count">0/4</span> 完了
+            <span id="all-ok-message" style="color: red;"></span>
+        </div>
+        
+        <div id="checklist-container">
+            </div>
+    </div>
+
+    <script>
+        // 1. チェックリストのデータ (お客様から提供される項目)
+        const CHECKLIST_DATA = [
+            { id: 1, name: "計測タグの設置場所と動作確認", hasImage: true, imagePath: "https://via.placeholder.com/250x100?text=Tag+Placement+Example" },
+            { id: 2, name: "効果測定レポートのKPI定義 (社内合意)", hasImage: false },
+            { id: 3, name: "契約プランと利用機能の最終確認", hasImage: true, imagePath: "https://via.placeholder.com/250x150?text=Plan+Overview" },
+            { id: 4, name: "データ連携（API接続等）の事前テスト結果確認", hasImage: false },
+            // 必要に応じてここに項目を追加してください
+        ];
+
+        const totalItems = CHECKLIST_DATA.length;
+        const container = document.getElementById('checklist-container');
+        const progressDisplay = document.getElementById('progress-count');
+        const okMessage = document.getElementById('all-ok-message');
+        let completedCount = 0;
+
+        /**
+         * チェックボックスがクリックされたときの処理
+         */
+        function handleCheck(checkbox, itemId) {
+            const itemElement = checkbox.closest('.checklist-item');
+            
+            if (checkbox.checked) {
+                // チェックされた場合
+                completedCount++;
+                itemElement.classList.add('completed-item');
+            } else {
+                // チェックが外された場合
+                completedCount--;
+                itemElement.classList.remove('completed-item');
+            }
+
+            // 進捗の更新
+            updateProgress();
+        }
+
+        /**
+         * 進捗状況とメッセージの更新
+         */
+        function updateProgress() {
+            // 1. 進捗カウントの更新
+            progressDisplay.textContent = `${completedCount}/${totalItems}`;
+
+            // 2. 「導入OK」メッセージの表示/非表示
+            if (completedCount === totalItems) {
+                okMessage.textContent = "【導入OK！】";
+                okMessage.classList.add('all-complete');
+            } else {
+                okMessage.textContent = "【導入 NG】";
+                okMessage.classList.remove('all-complete');
+            }
+        }
+
+        /**
+         * 初期化処理：チェックリスト項目を画面に描画する
+         */
+        function initializeChecklist() {
+            CHECKLIST_DATA.forEach(item => {
+                // 項目ごとのHTML要素を生成
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'checklist-item';
+                itemDiv.id = `item-${item.id}`;
+
+                // チェックボックスの作成
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `check-${item.id}`;
+                
+                // イベントリスナーを追加: チェックの状態が変わったら handleCheck を呼ぶ
+                checkbox.addEventListener('change', () => handleCheck(checkbox, item.id));
+
+                // 項目名と画像コンテナ
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'item-info';
+                infoDiv.innerHTML = `<div class="item-name">${item.name}</div>`;
+
+                // 画像がある場合、画像要素を追加 (ダミー画像を使用)
+                if (item.hasImage && item.imagePath) {
+                    const img = document.createElement('img');
+                    img.src = item.imagePath;
+                    img.alt = `${item.name} の説明画像`;
+                    img.className = 'item-image';
+                    infoDiv.appendChild(img);
+                }
+
+                // 要素をitemDivに結合
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(infoDiv);
+                
+                // itemDivをコンテナに追加
+                container.appendChild(itemDiv);
+            });
+
+            // 初期表示の進捗を更新
+            updateProgress();
+        }
+
+        // ページロード時に初期化関数を実行
+        window.onload = initializeChecklist;
+    </script>
+
+</body>
+</html>
