@@ -97,6 +97,24 @@
     </div>
 
     <script>
+        // ==========================================
+        // 1. セキュリティ設定 (簡易パスワード)
+        // ==========================================
+        const SECRET_PASSWORD = "mel1514"; // ★ここを好きなパスワードに変えてください
+
+        function authenticate() {
+            const userInput = prompt("パスワードを入力してください");
+            
+            if (userInput === SECRET_PASSWORD) {
+                // 正解ならコンテンツを表示してリスト作成
+                document.getElementById('main-content').style.display = 'block';
+                initializeChecklist();
+            } else {
+                // 不正解なら警告を出して終了
+                alert("認証に失敗しました。ページをリロードしてやり直してください。");
+                document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;'>閲覧権限がありません</h1>";
+            }
+        }
         // 1. チェックリストのデータ
         // imagePathは配列で複数画像に対応しました。
         const CHECKLIST_DATA = [
@@ -227,6 +245,7 @@
 
 </body>
 </html>
+
 
 
 
