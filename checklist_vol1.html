@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AaaS導入前チェックリスト</title>
+    <title>Tele-Digi AaaS S&CV Lite チェックリスト</title>
 
     <style>
         body {
@@ -24,6 +24,12 @@
             border-bottom: 2px solid #007bff;
             padding-bottom: 10px;
             margin-bottom: 20px;
+        }
+        h2 {
+            color: #007bff;
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
         }
         .checklist-item {
             display: flex;
@@ -49,7 +55,8 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             margin-top: 10px;
-            display: block; /* ブロック要素にする */
+            display: block; 
+            margin-bottom: 5px; /* 複数画像用 */
         }
         .status-display {
             text-align: right;
@@ -62,7 +69,7 @@
         }
         /* チェックボックスのスタイル調整 */
         input[type="checkbox"] {
-            transform: scale(1.5); /* チェックボックスを少し大きく表示 */
+            transform: scale(1.5); 
             margin-top: 5px;
             cursor: pointer;
         }
@@ -78,10 +85,10 @@
 <body>
 
     <div class="container">
-        <h1>AaaS導入チェックリスト </h1>
+        <h1>Tele-Digi AaaS S&CV Lite チェックリスト</h1>
         
         <div class="status-display">
-            進捗: <span id="progress-count">0/4</span> 完了
+            進捗: <span id="progress-count"></span> 完了
             <span id="all-ok-message" style="color: red;"></span>
         </div>
         
@@ -90,13 +97,30 @@
     </div>
 
     <script>
-        // 1. チェックリストのデータ (お客様から提供される項目)
+        // 1. チェックリストのデータ
+        // imagePathは配列で複数画像に対応しました。
         const CHECKLIST_DATA = [
-            { id: 1, name: "計測タグの設置場所と動作確認", hasImage: true, imagePath: "https://via.placeholder.com/250x100?text=Tag+Placement+Example" },
-            { id: 2, name: "効果測定レポートのKPI定義 (社内合意)", hasImage: false },
-            { id: 3, name: "契約プランと利用機能の最終確認", hasImage: true, imagePath: "https://via.placeholder.com/250x150?text=Plan+Overview" },
-            { id: 4, name: "データ連携（API接続等）の事前テスト結果確認", hasImage: false },
-            // 必要に応じてここに項目を追加してください
+            // --- 通常項目 ---
+            { id: 1, name: "進行スケジュールは確認しましたか", hasImage: true, imagePaths: ["https://via.placeholder.com/300x150?text=Schedule+Example"] },
+            { 
+                id: 2, 
+                name: "商流/計測エリア/対応メディア/対応KPIは確認しましたか", 
+                hasImage: true, 
+                imagePaths: [
+                    "https://via.placeholder.com/300x150?text=Diagram+1+(Flow+Media)",
+                    "https://via.placeholder.com/300x150?text=Diagram+2+(KPIs+Area)"
+                ] 
+            },
+            // 項目が重複していたため、ID:3はダミーで「データ連携要件」として追加します。
+            { id: 3, name: "データ連携要件と接続許可は取得済みですか", hasImage: true, imagePaths: ["https://via.placeholder.com/300x150?text=Data+Requirement+Example"] },
+            { id: 4, name: "得意先への報告アウトプットがダッシュボード上で描画可能か確認しましたか", hasImage: false },
+            { id: 5, name: "コストについて精査しましたか", hasImage: false },
+            
+            // --- YouTube計測 必須項目 ---
+            { id: 6, name: "【YouTube計測】Digitalの計測可能媒体はYouTubeのみであることを理解していますか", hasImage: false, group: "YouTube" },
+            { id: 7, name: "【YouTube計測】得意先からGA（またはBigQuery）の権限を共有してもらう必要があることを把握していますか", hasImage: false, group: "YouTube" },
+            { id: 8, name: "【YouTube計測】CM/DV360の導入スケジュールと入稿スケジュールを把握していますか", hasImage: true, imagePaths: ["https://via.placeholder.com/300x150?text=CM/DV360+Timeline"], group: "YouTube" },
+            { id: 9, name: "【YouTube計測】CM360は従量課金制であることを理解していますか", hasImage: false, group: "YouTube" },
         ];
 
         const totalItems = CHECKLIST_DATA.length;
@@ -112,11 +136,9 @@
             const itemElement = checkbox.closest('.checklist-item');
             
             if (checkbox.checked) {
-                // チェックされた場合
                 completedCount++;
                 itemElement.classList.add('completed-item');
             } else {
-                // チェックが外された場合
                 completedCount--;
                 itemElement.classList.remove('completed-item');
             }
@@ -146,7 +168,22 @@
          * 初期化処理：チェックリスト項目を画面に描画する
          */
         function initializeChecklist() {
+            let currentGroup = '';
+
             CHECKLIST_DATA.forEach(item => {
+                // グループが変わる場合、見出しを追加
+                if (item.group && item.group !== currentGroup) {
+                    const heading = document.createElement('h2');
+                    heading.textContent = item.group === "YouTube" ? "YouTube計測 必須項目" : "基本項目";
+                    container.appendChild(heading);
+                    currentGroup = item.group;
+                } else if (!item.group && currentGroup !== '基本項目') {
+                    const heading = document.createElement('h2');
+                    heading.textContent = "基本項目";
+                    container.appendChild(heading);
+                    currentGroup = '基本項目';
+                }
+
                 // 項目ごとのHTML要素を生成
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'checklist-item';
@@ -156,8 +193,6 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.id = `check-${item.id}`;
-                
-                // イベントリスナーを追加: チェックの状態が変わったら handleCheck を呼ぶ
                 checkbox.addEventListener('change', () => handleCheck(checkbox, item.id));
 
                 // 項目名と画像コンテナ
@@ -165,13 +200,15 @@
                 infoDiv.className = 'item-info';
                 infoDiv.innerHTML = `<div class="item-name">${item.name}</div>`;
 
-                // 画像がある場合、画像要素を追加 (ダミー画像を使用)
-                if (item.hasImage && item.imagePath) {
-                    const img = document.createElement('img');
-                    img.src = item.imagePath;
-                    img.alt = `${item.name} の説明画像`;
-                    img.className = 'item-image';
-                    infoDiv.appendChild(img);
+                // 画像がある場合、画像要素を追加 (複数画像に対応)
+                if (item.hasImage && item.imagePaths && item.imagePaths.length > 0) {
+                    item.imagePaths.forEach(path => {
+                        const img = document.createElement('img');
+                        img.src = path;
+                        img.alt = `${item.name} の説明画像`;
+                        img.className = 'item-image';
+                        infoDiv.appendChild(img);
+                    });
                 }
 
                 // 要素をitemDivに結合
@@ -191,5 +228,4 @@
     </script>
 
 </body>
-
 </html>
